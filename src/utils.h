@@ -30,6 +30,7 @@ int alloc_some_floats (float **my_array, unsigned long how_many);
 int alloc_some_long_ptrs (long ***my_array, unsigned long how_many);
 int alloc_some_longs (long **my_array, unsigned long how_many);
 int alloc_some_u_longs (unsigned long **my_array, unsigned long how_many);
+int alloc_some_shorts (unsigned short **my_array, unsigned long how_many);
 int alloc_some_ints (int **my_array, unsigned long how_many);
 int alloc_some_char_ptrs (char ***my_array, unsigned long how_many);
 int alloc_some_chars (char **my_array, unsigned long how_many);

@@ -41,6 +41,14 @@ FILE *status_file;   /* Place to put status messages if incoming_verbose > 0 */
 ** TRUE we scale by the values in "col_sds."
 */
 
+/*
+asm (".section .drectve");
+asm (".ascii \"-export:knnvar\"");
+*/
+
+/* main() {} */
+/* int __w32_sharedptr_initialize () {return 0;} */
+
 void *knnvar (double *train_dat, long *train_dim, /* Training data and (nrow, ncol)     */
 			 double *test_dat, long *test_dim,   /* Test data and (nrow, ncol)         */
 			 long *number_of_classes,            /* Number of classes                  */
@@ -107,7 +115,7 @@ else {
 if (verbose > 0) {
 	status_file = fopen (*status_file_name, "a");
 	fprintf (status_file, "File name is %s\n", *status_file_name);
-	fflush (status_file);
+        fflush (status_file);
 }
 train = make_matrix ((unsigned long) train_dim[1], (unsigned long) train_dim[0],
 					 "Training set", REGULAR, FALSE);
@@ -191,6 +199,13 @@ if (*theyre_the_same == FALSE)
 
 
 /* Set all the c's to have 1's in them (if we're going backward) or 0's (if forward) */
+
+
+if (verbose > 0) {
+    fprintf (status_file, "Hey There! We're in thread 2!\n");
+    fflush (status_file);
+}
+
 if (*backward)
     for (i = 0; i < c->ncol; i++)
 	    *SUB (c, 0, i) = 1.0;
@@ -203,7 +218,7 @@ else
 */
 if (verbose > 0) {
 fprintf (status_file, "Okay, we're this far, with %li k's\n", *number_of_ks);
-fflush (status_file);
+    fflush (status_file);
 }
 
 if (alloc_some_doubles (&error_rates,                     (unsigned long) *number_of_ks)
@@ -235,6 +250,10 @@ if (verbose > 0) {
 }
 
 first_time = TRUE;
+if (verbose > 0) {
+fprintf (status_file, "Calling for the first time!\n");
+    fflush (status_file);
+}
 do_nn (action, first_time, train, train, c, k_vec, *number_of_ks,  *theyre_the_same, *number_of_classes,
            cost, prior, error_rates, misclass_mat, dont_return_classifications,
 		   (long *) 0, verbose, status_file);
@@ -256,7 +275,10 @@ for (k_ctr = 0; k_ctr < *number_of_ks; k_ctr++)
 }
 
 if (verbose > 0)
+{
     fprintf (status_file, "U: Starting point: rate %f, index %li\n", *best_error_rate, *best_k_index);
+    fflush (status_file);
+}
 
 /*
 ** Now go through each variable (row) in turn, finding the error rates when
@@ -276,15 +298,16 @@ while (1 > 0) {
                     continue;
             }
             if (*backward)
-                *SUB (c, 0, i) = 0.0;                                 /* Toggle it           */
+                *SUB (c, 0, i) = 0.0;                  /* Toggle it           */
             else
                 *SUB (c, 0, i) = 1.0;
-            do_nn (action, first_time, train, train, c, k_vec, *number_of_ks,       /* Get error rates     */
+/* Get error rates */
+            do_nn (action, first_time, train, train, c, k_vec, *number_of_ks,
                  *theyre_the_same, *number_of_classes, cost, prior,
                     error_rates, misclass_mat, dont_return_classifications,
                     (long *) 0, verbose, status_file);
             if (*backward)
-                *SUB (c, 0, i) = 1.0;                                 /* Put it back         */
+                *SUB (c, 0, i) = 1.0;                  /* Put it back         */
             else
                 *SUB (c, 0, i) = 0.0;
     
@@ -297,14 +320,19 @@ while (1 > 0) {
                  } /* end "if this is the best rate of this set so far */
             } /* end "for" loop through error rates */
 
-            if (verbose > 1)
-                fprintf (status_file, "U: About to compare best this set %f to best after %s %f\n",
-                    best_error_rate_this_set, action_ing, best_error_rate_after_deletion);
+            if (verbose > 1) {
+                fprintf (status_file, 
+"U: About to compare best this set %f to best after %s %f\n",
+best_error_rate_this_set, action_ing, best_error_rate_after_deletion);
+                fflush (status_file);
+            }
             if (best_error_rate_this_set <= best_error_rate_after_deletion) /* STRICT */
             {
-                if (verbose > 1)
+                if (verbose > 1) {
                     fprintf (status_file, "U: After %s %li, best this set is now %f\n", 
                         action_ing, i, best_error_rate_this_set);
+                    fflush (status_file);
+                }
                 for (k_ctr = 0; k_ctr < *number_of_ks; k_ctr++) {
                     best_error_rates_after_deletion[k_ctr] = error_rates[k_ctr];
                 }
@@ -312,7 +340,7 @@ while (1 > 0) {
                 best_error_rate_after_deletion = best_error_rate_this_set;
                 best_k_index_after_deletion    = best_k_index_this_set;
                 best_variable_to_delete        = i;
-        }
+            }
 
         } /* end "for" loop through variables */
 
@@ -551,9 +579,6 @@ free (error_rates);
 free (best_error_rates_scaled);
 free (best_error_rates_unscaled);
 free (c_unscaled->data);
-
-if (verbose > 0)
-    fflush (status_file);
 
 *status = 0L;
 if (verbose > 0) fclose (status_file);

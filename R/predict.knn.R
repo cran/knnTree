@@ -79,7 +79,7 @@ predict.knn <- function(object, test, train, theyre.the.same = FALSE, return.cla
 #
 # Get "filename" (which will only be used if verbose > 0)
 #
-pr <- Sys.getenv("HOME")
+pr <- Sys.getenv("R_HOME")
 	pr.chars <- substring(pr, 1:nchar(pr), 1:nchar(pr))
 	backslash <- pr.chars == "\\"
 	pr.chars[backslash] <- "/"
@@ -88,7 +88,7 @@ pr <- Sys.getenv("HOME")
 #
 # Call the DLL, and save the result.
 #
-	thang <- .C("myknn",
+	thang <- .C("knnvar",
 		as.double(train),
 		as.integer(c(nrow(train), ncol(train))),
 		as.double(test),

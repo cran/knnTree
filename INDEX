@@ -1,6 +1,8 @@
-knnTree         : Build knnTree models
-knn.var         : Build knn models with variable selection
-predict.knn     : Compute some predictions from a knn model
-predict.knnTree : Compute some predictions from a knnTree model
-print.knn       : Print some information about a knn model
-print.knnTree   : Print some information about a knnTree model
+knn.var                 K-Nearest Neighbor Classification With Variable
+                        Selection
+knnTree                 K-NEAREST NEIGHBOR CLASSIFIERS WITHIN LEAVES OF
+                        A TREE
+predict.knn             Predict using a knn object
+predict.knnTree         Predict using a knnTree object
+print.knn               Print a knn object
+print.knnTree           Print a knnTree object

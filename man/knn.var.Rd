@@ -71,10 +71,10 @@ knn.var (iris[samp,c(5, 1:4)]) # Build classifier
 It uses 1 out of 4 variables without scaling.
 
 Training rate is 0.01333 , achieved at k = 1}
-iris.knn <- .Last.value # Save model and predict
+iris.knn <- knn.var (iris[samp,c(5, 1:4)]) # Build and save, then predict
 predict (iris.knn, iris[-samp,c(5, 1:4)], iris[samp, c(5, 1:4)])
 \dontrun{$rate
-[1] 0.06666667}
+[1] 0.08}
 }
 
 \keyword{models}

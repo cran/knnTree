@@ -8,7 +8,7 @@ knn.var <- function (train, test, k.vec = seq(1,
 # Arguments: train: training set with classificationd in column 1
 #             test: test set with classifications in column 1
 #            k.vec: Set of values of k to consider
-#  theyre.the.same: TRUE is training and test sets are the same
+#  theyre.the.same: TRUE if training and test sets are the same
 # return.all.rates: if TRUE, return all error rates (one for each element
 #                   in k.vec), not just the smallest
 #          scaling: 0 = don't scale; 1 = try SDs; 2 = try MADs.
@@ -32,8 +32,10 @@ knn.var <- function (train, test, k.vec = seq(1,
 #
 # Likewise test. If it's missing, presumably test and train are the same.
 #
-    if (missing(test)) 
+    if (missing(test))  {
         test <- matrix(0, 1, 1)
+        theyre.the.same <- TRUE
+    }
     else {
         test[, 1] <- as.integer(unclass(test[, 1])) - 1
         test <- as.matrix(test)
@@ -74,7 +76,7 @@ knn.var <- function (train, test, k.vec = seq(1,
 # All this is for setting up the status file. The backslash stuff is
 # for S-Plus.
 #
-    pr <- Sys.getenv("HOME")
+    pr <- Sys.getenv("R_HOME")
     pr.chars <- substring(pr, 1:nchar(pr), 1:nchar(pr))
     backslash <- pr.chars == "\\"
     pr.chars[backslash] <- "/"

@@ -85,7 +85,7 @@ static double *nearest_distance;             /* Distance to closest neighbor    
 static long *nearest_class;                  /* Class of nearest neighbor             */
 static long *nearest_neighbor;               /* Number of NN                          */
 static long *poll_result;                    /* Winner of poll (est'd. class)         */
-static long *misclass_with_distance_zero;    /* ?                                     */
+/* static long *misclass_with_distance_zero;    ** ?                                     */
 static long *class_ctrs;                     /* Ctrs for computing naive model        */
 static long slots;                           /* Number of neighbors to keep track of. */
 static int use_within = 0;                   /* Try to use within_sample dists?       */
@@ -112,7 +112,7 @@ if (action == DO_NN_QUIT)
         free (nearest_neighbor);
         free (nearest_class);
         free (poll_result);
-        free (misclass_with_distance_zero);
+/*      free (misclass_with_distance_zero); */
         if (big_and_fast == TRUE)
         {
             for (j = 1; j < number_of_vars + 1; j ++)
@@ -157,6 +157,10 @@ for (j = 1; j < (long) test->nrow; j++)
 
 if (all_cs_are_0)
 {
+    if (verbose > 1) {
+        fprintf (status_file, "All c's are zero! We're naive!\n");
+        fflush (status_file);
+    }
     if (alloc_some_longs (&class_ctrs, number_of_classes) != 0)
     {
         if (verbose > 0)
@@ -186,7 +190,7 @@ if (all_cs_are_0)
 	}
 	if (verbose > 0) {
             fprintf (status_file, "Winner: found %li in class %i\n", max_class_count, class_with_most);
-	    fflush (status_file);
+        fflush (status_file);
         }
 
 	for (test_ctr = 0; test_ctr < test->ncol; test_ctr++)
@@ -198,11 +202,13 @@ if (all_cs_are_0)
 */
             for (k_ctr = 0; k_ctr < how_many_ks; k_ctr++)
             {
-                if (misclass_mat != (MATRIX *) NULL)
+                if (misclass_mat != (MATRIX *) NULL) {
                     *SUB (misclass_mat, test_class, class_with_most)
-		                = *SUB (misclass_mat, test_class, class_with_most) + 1;
-                if (return_classifications == TRUE)
+		        = *SUB (misclass_mat, test_class, class_with_most) + 1;
+                }
+                if (return_classifications == TRUE) {
 		   	        classifications[test_ctr] = class_with_most;
+                }
 
                 if (class_with_most != test_class)
                 {
@@ -213,23 +219,27 @@ if (all_cs_are_0)
 */
                     if (cost == (MATRIX *) NULL)
                         error_rates[k_ctr]++;
-                    else
+                    else 
                         error_rates[k_ctr] += *SUB (cost, test_class, class_with_most);
-/* This code comes from below. I'm going to ignore it for now.
-**                if (nearest_distance[0] == 0.0)
-**                  misclass_with_distance_zero[k_ctr]++;
-*/
+
+/* This code I'm a little uncertain of. I'll take it out for now. */
+/****
+*****              if (nearest_distance[0] == 0.0) {
+*****                  misclass_with_distance_zero[k_ctr]++;
+*****              } 
+****/
+
                 } /* end "if the prediction doesn't match the true class */
 
-                if (verbose >= 2 && k_ctr == 0)
+
+                if (verbose >= 3 && k_ctr == 0) {
                     fprintf (status_file,
                         "k = %ld: Classified test rec. %li (a %li) as %i (naive model)\n",
                          k[k_ctr], test_ctr, test_class, class_with_most);
+                   fflush (status_file);
+                }
                 } /* end "for k_ctr" loop to fill misclasses, errors, and classifications. */
         } /* end "for test_ctr" loop over test set */
-
-        if (verbose > 0)
-            fflush (status_file);
 
         for (k_ctr = 0; k_ctr < how_many_ks; k_ctr++)
         {
@@ -239,6 +249,7 @@ if (all_cs_are_0)
                     "k = %ld: misclassed %f records out of %li, fraction %f (naive)\n",
                     k[k_ctr], error_rates[k_ctr], test->ncol,
                     ((double) error_rates[k_ctr]) / ( (double) test->ncol));
+                fflush (status_file);
             }
             error_rates[k_ctr] /= (double) test->ncol;
 	} /* end "for k_ctr" loop to compute error rates. */
@@ -309,18 +320,21 @@ if (initialized == FALSE)
         return (-1);
     }
 
-    if (alloc_some_longs (&misclass_with_distance_zero,
-              (unsigned long) how_many_ks) != 0)
-    {
-	if (verbose > 0)
-	    fprintf (status_file, "Unable to get %li longs for miss II; abort\n",
-                 how_many_ks);
-	free (nearest_distance);
-	free (nearest_neighbor);
-	free (nearest_class);
-	free (poll_result);
-        return (-1);
-    }
+/*
+**  if (alloc_some_longs (&misclass_with_distance_zero,
+**            (unsigned long) how_many_ks) != 0)
+**  {
+**  if (verbose > 0)
+**      fprintf (status_file, "Unable to get %li longs for miss II; abort\n",
+**                     how_many_ks);
+**    	free (nearest_distance);
+**    	free (nearest_neighbor);
+**    	free (nearest_class);
+**    	free (poll_result);
+**      return (-1);
+**  }
+*/
+
 /*
 ** Now the big one. If "action" is DO_NN_INITIALIZE_BIG, we're going to want to try
 ** to allocate (number of vars) matrices, each one training->ncol (remember this is
@@ -353,7 +367,6 @@ if (initialized == FALSE)
                         for (another_j = 0; another_j < j; another_j++){
                             if (verbose > 0) {
                                 fprintf (status_file, "free, another_j = %li, j = %li\n", another_j, j);
-                                fflush (status_file);
                             }
                             free (dist_holder[another_j]->data);
                             free (dist_holder[another_j]);
@@ -389,7 +402,7 @@ if (initialized == FALSE)
         for (j = 0; j < how_many_ks; j++)
         {
             error_rates[j] = 0.0;
-            misclass_with_distance_zero[j] = 0L;
+/*          misclass_with_distance_zero[j] = 0L; */
         }
 /*
 ** Set up the within_sample_distance matrix, if theyre_the_same is true. This should
@@ -421,11 +434,10 @@ if (misclass_mat != (MATRIX *) NULL)
     zero_matrix (misclass_mat);
 }
 
-if (verbose > 0)
-    fflush (status_file);
-
 test_item_count = 0L;
 all_training_items_are_in_same_class = TRUE;
+if (verbose > 1)
+fprintf (status_file, "Not naive, init. complete!\n");
 
 
 /*=========================== BEGIN TEST SET LOOP =============================*/
@@ -437,7 +449,7 @@ for (test_ctr = 0; test_ctr < test->ncol; test_ctr++)
 {
 
     test_item_count++;
-    if (verbose >= 3)
+    if (verbose >= 6)
         fprintf (status_file, "Computing dists for test record %li\n", test_ctr);
 /*
 ** ..zero out the nearest neighbor information...
@@ -510,9 +522,8 @@ for (test_ctr = 0; test_ctr < test->ncol; test_ctr++)
 ** know we can stop this comparison. The function returns -1, and we continue.
 */
 
-        if (verbose >= 3) {
+        if (verbose >= 7) {
             fprintf (status_file, "Dist from (train) %li to (test) %li was %f!\n", train_ctr, test_ctr, dist);
-	    fflush (status_file);
         }
         if (dist < 0)
             continue;
@@ -522,10 +533,9 @@ for (test_ctr = 0; test_ctr < test->ncol; test_ctr++)
 */
         if (dist < nearest_distance[slots-1] || number_of_nearest < slots)
         {
-            if (verbose >= 3 && dist <= nearest_distance[0]) {
+            if (verbose >= 6 && dist <= nearest_distance[0]) {
                 fprintf (status_file, "Smallest so far for %li is %li, distance %f\n",
                          test_ctr, train_ctr, dist);
-		fflush (status_file);
             }
 /*
 ** Find the spot for this new neighbor. When we find it (and by "the spot"
@@ -576,7 +586,6 @@ for (test_ctr = 0; test_ctr < test->ncol; test_ctr++)
 			poll_result[k_ctr] = class_of_training_item_0;
 	}
 	else {
-                poll_debug = 0;
                 if (poll_debug)  {
 printf ("Poll on test %li, nearest are %li %li %li\n", test_ctr, nearest_class[0],
 nearest_class[1], nearest_class[2]);
@@ -611,14 +620,17 @@ nearest_class[1], nearest_class[2]);
             else
                 error_rates[k_ctr]
                     += *SUB (cost, test_class, poll_result[k_ctr]);
-            if (nearest_distance[0] == 0.0)
-                misclass_with_distance_zero[k_ctr]++;
-        }
-		if (verbose >= 2 && k_ctr == 0)
+/**         if (nearest_distance[0] == 0.0)
+***             misclass_with_distance_zero[k_ctr]++;
+**/
+        } 
+		if (verbose >= 3 && k_ctr == 0) {
 			fprintf (status_file,
 			"k = %ld: Classified test rec. %li (a %li) as %li (nearest: %li, dist. %f)\n",
 			k[k_ctr], test_ctr, test_class, (long) poll_result[k_ctr],
 			(long) nearest_neighbor[0], nearest_distance[0]);
+                        fflush (status_file);
+                }
     }
 
 } /* end "for test_ctr" loop for test set. */
@@ -637,29 +649,35 @@ for (k_ctr = 0; k_ctr < how_many_ks; k_ctr++)
 			"k = %ld: misclassed %f records out of %li, fraction %f\n",
             k[k_ctr], error_rates[k_ctr], test_item_count,
                 ((double) error_rates[k_ctr]) / ( (double) test_item_count));
+        fflush (status_file);
     }
-    if (verbose >= 2)
-    {
-        fprintf (status_file,
-            "Of those, %li (fraction %f) has nearest distance zero\n",
-            misclass_with_distance_zero[k_ctr],
-                 ((double) misclass_with_distance_zero[k_ctr])
-                                          / ( (double) test_item_count));
-    }
+/********
+**  if (verbose >= 2)
+**  {
+**      fprintf (status_file,
+**          "Of those, %li (fraction %f) has nearest distance zero\n",
+**          misclass_with_distance_zero[k_ctr],
+**               ((double) misclass_with_distance_zero[k_ctr])
+**                                        / ( (double) test_item_count));
+**  }
+***/
 
     error_rates[k_ctr] /= (double) test_item_count;
 
 }
 
+
 if (within_sample_distances != (MATRIX *) NULL)
     free (within_sample_distances->data);
 
 
+/*
 free (nearest_distance);
 free (nearest_neighbor);
 free (nearest_class);
 free (poll_result);
-free (misclass_with_distance_zero);
+*/
+/**** free (misclass_with_distance_zero); */
 /*
 initialized = FALSE;
 */
@@ -950,3 +968,4 @@ for (i = 0; i < n; i++)
 return (sum);
 
 } /* end "c_absolute" */
+
