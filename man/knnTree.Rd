@@ -6,8 +6,8 @@ a set of k-nearest neighbor classifiers, one for each leaf of a tree.}
 \usage{knnTree (trg.set, trg.classes, v = 10, 
 k.vec = seq(1, 31, by = 2), seed = 0, opt.tree = "ignore", 
 opt.tree.size = 4, scaling = 1, prune.function = prune.misclass, 
-one.SE = TRUE, backward = FALSE, v.start = 1, leaf.start = 1, 
-verbose = FALSE, debug = 0, fname = "", use.big = FALSE, save.output = FALSE)
+one.SE = TRUE, backward = FALSE, max.steps=-1, v.start = 1, leaf.start = 1, 
+verbose = FALSE, debug = 0, fname = "", use.big = FALSE, save.output = "")
 }
 \arguments{
 \item{trg.set} {data frame or matrix of training data without classifications}
@@ -32,6 +32,8 @@ prune.misclass}
 means start with all variables and delete them one at a time until there is
 no improvement; FALSE means start with no variables and add them one at a 
 time.}
+\item{max.steps} {numeric giving maximum number of steps to take. If negative,
+continue until there is no improvement. Default: -1.}
 \item{v.start} {number of cross-validation block to start at; for 
 debugging only}
 \item{leaf.start} {number of leaf to start at; for debugging only}

@@ -10,7 +10,8 @@ or backward, but not both) selection is used to find the best set of variables t
 include, the best choice of k, and whether the data should be scaled.}
 \usage{knn.var (train, test, k.vec = seq (1, 31, by=2), 
 theyre.the.same=FALSE,
-return.all.rates=FALSE, scaling = 1, backward = FALSE, save.call = FALSE, 
+return.all.rates=FALSE, scaling = 1, backward = FALSE, max.steps=-1, 
+save.call = FALSE, 
 verbose = 0, use.big=TRUE)}
 \arguments{
 \item{train} {data frame or matrix of training data with classifications 
@@ -32,6 +33,8 @@ choose between no scaling and scaling each column by its MAD.}
 means start with all variables and delete them one at a time until there is
 no improvement; FALSE means start with no variables and add them one at a 
 time.}
+\item{max.steps} {numeric giving maximum number of steps to take. If negative,
+continue until there is no improvement. Default: -1.}
 \item{save.call} {logical, TRUE if a copy of the call should be saved in the
 resulting object}
 \item{verbose} {numeric for debugging purposes.  If verbose is 0, no

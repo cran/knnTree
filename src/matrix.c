@@ -1654,27 +1654,43 @@ double sum_of_squares (MATRIX *a)
 {
 /* This computes the sum of the squares of the entries in a matrix. */
 unsigned long i, j, how_many;
-double sum;
+double holder = 0.0, sum;
 sum = 0.0;
 switch (a->sym_storage)
 {
     case REGULAR:
 	how_many = a->ncol * a->nrow;
 	for (i = 0; i < how_many; i++)
-	    sum += pow (*(a->data + i), 2.0);
-	break;
+        {
+                    holder = *(a->data + i);
+            sum += holder * holder;
+	    /* sum += pow (*(a->data + i), 2.0); */
+        }
+	        break;
     case SYMMETRIC:
 	for (i = 0; i < a->nrow; i++)
 	    for (j = 0; j < a->ncol; j++)
 		if (i == j)
-		    sum += pow (*SYM_SUB (a, i, i), 2.0);
+                {
+                        holder = *SYM_SUB(a, i, i);
+                    sum += holder * holder;
+                }
+    		    /* sum += pow (*SYM_SUB (a, i, i), 2.0); */
 		else
-		    sum += 2 * pow (*SYM_SUB (a, i, j), 2.0);
+                {
+                    holder = *SYM_SUB (a, i, j);
+                    sum += 2 * holder * holder;
+                }
+/* 		    sum += 2 * pow (*SYM_SUB (a, i, j), 2.0); */
     case UPPER_TRIANGULAR:
     case LOWER_TRIANGULAR:
 	how_many = (a->nrow * (a->nrow + 1)) / 2;
 	for (i = 0; i < how_many; i++)
-	    sum += pow (*(a->data + i), 2.0);
+        {
+            holder = *(a->data + i);
+            sum += holder * holder;
+        }
+/* 	    sum += pow (*(a->data + i), 2.0); */
 	break;
 }
 return (sum);
@@ -2256,7 +2272,7 @@ double norm_of_difference (MATRIX *a, MATRIX *b)
 ** This function computes the (L2) norm of the difference between two
 ** one-column matrices, that is, the sum-over-i of (a-i - b-i)^2.
 */
-double sum;
+double holder, sum;
 unsigned long i;
 
 /* Require that these be one-column vectors of the same length. */
@@ -2274,7 +2290,11 @@ if (a->nrow != b->nrow)
 sum = 0.0;
 /* Loop: add (a-i - b-i)^2 for each element. */
 for (i = 0L; i < a->nrow; i++)
-    sum += pow (a->data[i] - b->data[i], 2.0);
+{
+    holder = a->data[i] - b->data[i];
+    sum += holder * holder;
+}
+/*     sum += pow (a->data[i] - b->data[i], 2.0); */
 
 /* Now return sum. */
 return (sum);

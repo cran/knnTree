@@ -1,7 +1,7 @@
 knnTree <- 
 function(trg.set, trg.classes, v = 10, k.vec = seq(1, 31, by = 2), seed = 0, 
 	opt.tree = "ignore", opt.tree.size = 4, scaling = 1, prune.function = 
-	prune.misclass, one.SE = TRUE, backward = FALSE, v.start = 1, leaf.start = 1, 
+	prune.misclass, one.SE = TRUE, backward = FALSE, max.steps=-1, v.start = 1, leaf.start = 1, 
 	verbose = FALSE, debug = 0, fname = "", use.big = FALSE, save.output = "")
 {
 #
@@ -21,6 +21,7 @@ function(trg.set, trg.classes, v = 10, k.vec = seq(1, 31, by = 2), seed = 0,
 #                scaling: Scaling for knn. 0 = none; 1 = by SD; 2 = by MAD.
 #         prune.function: Function to be used for pruning operations
 #              backward : If TRUE, do backwards selection, else forward
+#             max.steps : Maximum number of steps to take (if < 0, infinite)
 #               v.start : Chunk to start at (for debugging only)
 #            leaf.start : Leaf to start at (debugging only)
 # 		verbose : whether optimal tree size and other information is to be
@@ -219,7 +220,7 @@ function(trg.set, trg.classes, v = 10, k.vec = seq(1, 31, by = 2), seed = 0,
 #
 # Otherwise, figure out what subset of the data to use, and only use those k values
 # which are smaller than the number of items in the leaf. If none of the k-vec entries
-# satisfy that condition, set k = 1. Then call knn.var.select and save the output.
+# satisfy that condition, set k = 1. Then call knn.var and save the output.
 #
 				    sub.data <- data[ - chunk,  ][items.in.leaf,
 				      ]
@@ -227,9 +228,9 @@ function(trg.set, trg.classes, v = 10, k.vec = seq(1, 31, by = 2), seed = 0,
 				      items.in.leaf)]	#
 				    if(length(new.k.vec) < 1)
 				      new.k.vec <- 1
-				    out <- knn.var.select(sub.data, k = 
+				    out <- knn.var(sub.data, k = 
 				      new.k.vec, scaling = scaling, backward = 
-				      backward, verbose = 0, theyre.the.same = 
+				      backward, max.steps=max.steps, verbose = 0, theyre.the.same = 
 				      TRUE, use.big = use.big)	#
 #
 # Find the test set items that fall in this leaf and, if there are any, call the
@@ -337,9 +338,9 @@ function(trg.set, trg.classes, v = 10, k.vec = seq(1, 31, by = 2), seed = 0,
 			new.k.vec <- 1
 		diagnose("...   ...Leaf", leaf, "(where", where[leaf], ") has", 
 			sum(items.in.leaf), "entries;", level = 0)
-		knn.out <- knn.var.select(data[items.in.leaf,  ], k = new.k.vec,
+		knn.out <- knn.var(data[items.in.leaf,  ], k = new.k.vec,
 			theyre.the.same = TRUE, scaling = scaling, backward = 
-			backward, verbose = 0, use.big = use.big)
+			backward, max.steps=max.steps, verbose = 0, use.big = use.big)
 		knn.out$leaf <- leaf
 		knn.out$where <- where[leaf]
 		results[[leaf + 1]] <- knn.out

@@ -49,50 +49,57 @@ asm (".ascii \"-export:knnvar\"");
 /* main() {} */
 /* int __w32_sharedptr_initialize () {return 0;} */
 
-void *knnvar (double *train_dat, long *train_dim, /* Training data and (nrow, ncol)     */
-			 double *test_dat, long *test_dim,   /* Test data and (nrow, ncol)         */
-			 long *number_of_classes,            /* Number of classes                  */
-			 long *k_vec,                        /* Vector of choices for k            */
-			 long *number_of_ks,                 /* Length of k_vec                    */
-			 long *theyre_the_same,              /* Are train and test the same?       */
-			 double *best_error_rate,            /* Vector of error rates              */
-			 long *return_all_rates,             /* Return all rates or just the best? */
-			 long *best_k_index,                 /* Number of best element of k_vec    */
-			 double *c_dat,                      /* Vector of weights for columns      */
-			 long *scaled,                       /* "Best" classifier's scaling type ? */
-			 double *col_sds,                    /* Sds of each column                 */
-			 long *return_classifications,       /* Return 'em if true...              */
-			 long *classifications,              /* ...putting 'em here                */
-			 long *backward,                     /* Step backward or forward?          */
-			 long *incoming_verbose,             /* Level of verbosity                 */
-			 char **status_file_name,            /* Place to dump messages             */
-			 long *status)                       /* Info. about any failures           */
+void *knnvar (double *train_dat,           /* Training data               */
+         long *train_dim,                  /* Training data (nrow, ncol)  */
+	 double *test_dat,                 /* Test data                   */
+         long *test_dim,                   /* Test data (nrow, ncol)      */
+	 long *number_of_classes,          /* Number of classes           */
+	 long *k_vec,                      /* Vector of choices for k     */
+	 long *number_of_ks,               /* Length of k_vec             */
+	 long *theyre_the_same,            /* Are train and test the same?*/
+	 double *best_error_rate,          /* Vector of error rates       */
+	 long *return_all_rates,           /* Return all rates or just best? */
+	 long *best_k_index,               /* Number of best element of k_vec*/
+	 double *c_dat,                    /* Vector of weights for columns  */
+	 long *scaled,                     /* "Best" classifier's scaltype ? */
+	 double *col_sds,                  /* Sds of each column          */
+	 long *return_classifications,     /* Return 'em if true...       */
+	 long *classifications,            /* ...putting 'em here         */
+	 long *backward,                   /* Step backward or forward?   */
+         long *max_steps,                  /* Max. number of steps to take*/
+	 long *incoming_verbose,           /* Level of verbosity          */
+	 char **status_file_name,          /* Place to dump messages      */
+	 long *status)                     /* Info. about any failures    */
 {
 
 
-MATRIX *train, *test;                   /* Matrices holding train and test data    */
-MATRIX *c, *c_unscaled;                 /* Holds coefficients of each variable     */
-unsigned long i; long k_ctr;            /* Counters                                */
-long action = FALSE;                    /* Item needed by do_nn                    */
-/* FILE *status_file = (FILE *) 0;         ** File into which messages are put        */
-double best_error_rate_this_set;        /* Best error rate when this one deleted...*/
-int best_k_index_this_set = 0;          /* ...and the corresponding k index        */
-double best_error_rate_after_deletion;  /* Best rate when any variable deleted...  */
-int best_k_index_after_deletion = 0;    /* ...the corresponding k index...         */
-long best_variable_to_delete = 0L;      /* ...and the variable that did it         */
-double best_rate_unscaled;              /* Best rate after unscaled processing...  */
-int best_k_index_unscaled;              /* ...and the corresponding k index        */
-int dont_return_classifications = FALSE;/* Says "just compute misclass rates"      */
-char *action_ed, *action_ing;           /* String for printing debug msgs.         */
-int first_time;                         /* First time calling do_nn?               */
-int verbose;                            /* "int" version of verbose                */
+MATRIX *train, *test;                 /* Matrices holding train and test data*/
+MATRIX *c, *c_unscaled;               /* Holds coefficients of each variable */
+unsigned long i; long k_ctr;          /* Counters                            */
+long action = FALSE;                  /* Item needed by do_nn                */
+/* FILE *status_file = (FILE *) 0;       ** File into which messages are put */
+double best_error_rate_this_set;      /* Best err rate when this one deleted..*/
+int best_k_index_this_set = 0;        /* ...and the corresponding k index    */
+double best_error_rate_after_deletion;/* Best rate when any var...           */
+int best_k_index_after_deletion = 0;  /* ...the corresponding k index...     */
+long best_variable_to_delete = 0L;    /* ...and the variable that did it     */
+double best_rate_unscaled;            /* Best rate after unscaled proc'ng... */
+int best_k_index_unscaled;              /* ...and the corresponding k index  */
+int dont_return_classifications = FALSE;/* Says "just compute misclass rates"*/
+char *action_ed, *action_ing;           /* String for printing debug msgs.   */
+int first_time;                         /* First time calling do_nn?         */
+long number_of_steps;                   /* Number of steps taken             */
+int verbose;                            /* "int" version of verbose          */
 
 double *error_rates,
        *best_error_rates_after_deletion,
        *best_error_rates_unscaled,
 	   *best_error_rates_scaled;
-MATRIX *cost = (MATRIX *) 0, *prior = (MATRIX *) 0, *misclass_mat = (MATRIX *) 0;
+MATRIX *cost = (MATRIX *) 0, *prior = (MATRIX *) 0,  
+       *misclass_mat = (MATRIX *) 0;
 verbose = (int) *incoming_verbose;
+verbose = 0;
+
 if (*backward) {
     action_ed = "deleted";
 	action_ing = "deleting";
@@ -131,7 +138,7 @@ c->data = c_dat;
 
 if (*theyre_the_same == FALSE)
 {
-/*============================== Thread 1 =============================================*/
+/*========================= Thread 1 =========================================*/
 /*
 ** One thread of the function comes here. If "theyre_the_same" is FALSE, we call
 ** do_nn one time. We need to scale the data if asked.
@@ -158,6 +165,7 @@ if (*theyre_the_same == FALSE)
 		scale_matrix_rows (test, FALSE, TRUE, c, USE_THESE_SCALINGS, (double *) 0, col_sds);
 
 	}
+
 
 	if (*status == 2)
             action = DO_NN_INITIALIZE; /* Don't do "big" on thread 1; it won't help. */
@@ -195,10 +203,13 @@ if (*theyre_the_same == FALSE)
 	return ( (void *) 0);
 }
 
-/*============================== End of Thread 1 =======================================*/
+/*========================= End of Thread 1 ==================================*/
 
 
-/* Set all the c's to have 1's in them (if we're going backward) or 0's (if forward) */
+/*
+** Set all the c's to have 1's in them (if we're going backward) 
+** or 0's (if forward) 
+*/
 
 
 if (verbose > 0) {
@@ -221,10 +232,13 @@ fprintf (status_file, "Okay, we're this far, with %li k's\n", *number_of_ks);
     fflush (status_file);
 }
 
-if (alloc_some_doubles (&error_rates,                     (unsigned long) *number_of_ks)
- || alloc_some_doubles (&best_error_rates_after_deletion, (unsigned long) *number_of_ks)
- || alloc_some_doubles (&best_error_rates_unscaled,       (unsigned long) *number_of_ks)
- || alloc_some_doubles (&best_error_rates_scaled,         (unsigned long) *number_of_ks) )
+if (alloc_some_doubles (&error_rates,           (unsigned long) *number_of_ks)
+    || alloc_some_doubles (&best_error_rates_after_deletion, 
+                                                (unsigned long) *number_of_ks)
+    || alloc_some_doubles (&best_error_rates_unscaled,       
+                                                (unsigned long) *number_of_ks)
+    || alloc_some_doubles (&best_error_rates_scaled,
+                                                (unsigned long) *number_of_ks) )
 {
     *status = -1L;
     if (verbose > 0) fclose (status_file);
@@ -282,12 +296,13 @@ if (verbose > 0)
 
 /*
 ** Now go through each variable (row) in turn, finding the error rates when
-** that variable is "deleted."
+** that variable is "deleted." Take as many steps as there are in "*max_steps,"
+** or go forever if that's negative.
 */
+number_of_steps = 0L;
+while (*max_steps < 0 || number_of_steps < *max_steps){
 
-while (1 > 0) {
-
-	best_error_rate_after_deletion = 1.1;
+	best_error_rate_after_deletion = .1;
 
 	for (i = 0; i < train->nrow; i++) 
 	{
@@ -369,18 +384,19 @@ best_error_rate_this_set, action_ing, best_error_rate_after_deletion);
 		break;
 	}
 
+    number_of_steps++;
 } /* end "while (forever)" loop */
 
 
 /*
-*******************************************************************************************
+****************************************************************************
 */
 /*
 ** At this stage we've done everything we need to with the unscaled variables.
 ** If we haven't been asked to scale, we're done. Best error_rate, best_k_index,
-** and c are properly set. So we can go home. Do the cleanup first (whether we're
-** quitting or not, since if we're scaling we'll need to re-compute all the distances
-** anyway.)
+** and c are properly set. So we can go home. Do the cleanup first (whether
+** we're quitting or not, since if we're scaling we'll need to re-compute all 
+** the distances anyway.)
 */
 do_nn (DO_NN_QUIT, first_time, train, train, c, k_vec, *number_of_ks,
 			   *theyre_the_same, *number_of_classes, cost, prior,
@@ -460,7 +476,8 @@ if (verbose > 0)
 ** that variable is 'deleted.'
 */
 
-while (1 > 0) {
+number_of_steps = 0L;
+while (*max_steps < 0 || number_of_steps < *max_steps) {
 
 	best_error_rate_after_deletion = 1.1;
 
@@ -536,6 +553,7 @@ while (1 > 0) {
 		break;
 	}
 
+    number_of_steps ++;
 } /* end "while (forever)" loop */
 
 

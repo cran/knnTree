@@ -106,9 +106,10 @@ pr <- Sys.getenv("R_HOME")
 		as.integer(return.classifications),
 		classifications = as.integer(classifications),
 		backward = as.integer(backward),
+                as.integer (0),
 		as.integer(verbose),
 		filename,
-		status = as.integer(status))	#
+		status = as.integer(status), PACKAGE="knnTree")	#
 # Produce the output list, which contains the rate plus, if return.classifications
 # is true, a vector of predictions. Factorize if necessary.
 #

@@ -1,6 +1,6 @@
 knn.var <- function (train, test, k.vec = seq(1, 
     31, by = 2), theyre.the.same = FALSE, return.all.rates = FALSE, scaling = 1, 
-    backward = FALSE, save.call = FALSE, verbose = 0, use.big = TRUE) 
+    backward = FALSE, max.steps=-1, save.call = FALSE, verbose = 0, use.big = TRUE) 
 {
 #
 # knn.var: Call C code to produce a knn object with variable selection.
@@ -13,6 +13,7 @@ knn.var <- function (train, test, k.vec = seq(1,
 #                   in k.vec), not just the smallest
 #          scaling: 0 = don't scale; 1 = try SDs; 2 = try MADs.
 #         backward: TRUE = backward selection; FALSE = forward
+#        max.steps: Max. number of steps to take ( <0 = go forever)
 #        save.call: if TRUE, save a copy of the call
 #          verbose: Level of verbosity (for debugging)
 #          use.big: try a bigger-but-faster approach
@@ -89,8 +90,9 @@ knn.var <- function (train, test, k.vec = seq(1,
         as.integer(return.all.rates), best.k.index = as.integer(best.k.index), 
         which = as.double(which), scaling = as.integer(scaling), 
         col.sds = as.double(col.sds), as.integer(return.classifications), 
-        as.integer(classifications), as.integer(backward), as.integer(verbose), 
-        filename, status = as.integer(status))
+        as.integer(classifications), as.integer(backward), 
+        as.integer(max.steps), as.integer(verbose), 
+        filename, status = as.integer(status), PACKAGE="knnTree")
 #
 # Okay. We're back. First thing: is status = 0?
 #
