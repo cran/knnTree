@@ -1,1 +1,1 @@
-PKG_CFLAGS=-I . -pedantic -Wall -lm
+PKG_CFLAGS=-I . -pedantic -Wall -lm -DBUILDING_FOR_R -DUSE_S_ALLOC

@@ -14,6 +14,12 @@ extern void do_nothing();
 #define free do_nothing
 #endif
 
+#ifdef BUILDING_FOR_R
+#define INT_OR_LONG int
+#else
+#define INT_OR_LONG long
+#endif
+
 #define DONT_SCALE 0
 #define USE_SDS    1
 #define USE_MAD    2
@@ -41,35 +47,27 @@ FILE *status_file;   /* Place to put status messages if incoming_verbose > 0 */
 ** TRUE we scale by the values in "col_sds."
 */
 
-/*
-asm (".section .drectve");
-asm (".ascii \"-export:knnvar\"");
-*/
-
-/* main() {} */
-/* int __w32_sharedptr_initialize () {return 0;} */
-
 void *knnvar (double *train_dat,           /* Training data               */
-         long *train_dim,                  /* Training data (nrow, ncol)  */
+         INT_OR_LONG *train_dim,           /* Training data (nrow, ncol)  */
 	 double *test_dat,                 /* Test data                   */
-         long *test_dim,                   /* Test data (nrow, ncol)      */
-	 long *number_of_classes,          /* Number of classes           */
-	 long *k_vec,                      /* Vector of choices for k     */
-	 long *number_of_ks,               /* Length of k_vec             */
-	 long *theyre_the_same,            /* Are train and test the same?*/
+         INT_OR_LONG *test_dim,            /* Test data (nrow, ncol)      */
+	 INT_OR_LONG *number_of_classes,   /* Number of classes           */
+	 INT_OR_LONG *k_vec,               /* Vector of choices for k     */
+	 INT_OR_LONG *number_of_ks,        /* Length of k_vec             */
+	 INT_OR_LONG *theyre_the_same,     /* Are train and test the same?*/
 	 double *best_error_rate,          /* Vector of error rates       */
-	 long *return_all_rates,           /* Return all rates or just best? */
-	 long *best_k_index,               /* Number of best element of k_vec*/
+	 INT_OR_LONG *return_all_rates,    /* Return all rates or just best? */
+	 INT_OR_LONG *best_k_index,        /* Number of best element of k_vec*/
 	 double *c_dat,                    /* Vector of weights for columns  */
-	 long *scaled,                     /* "Best" classifier's scaltype ? */
+	 INT_OR_LONG *scaled,              /* "Best" classifier's scaltype ? */
 	 double *col_sds,                  /* Sds of each column          */
-	 long *return_classifications,     /* Return 'em if true...       */
-	 long *classifications,            /* ...putting 'em here         */
-	 long *backward,                   /* Step backward or forward?   */
-         long *max_steps,                  /* Max. number of steps to take*/
-	 long *incoming_verbose,           /* Level of verbosity          */
+	 INT_OR_LONG *return_classifications, /* Return 'em if true...    */
+	 INT_OR_LONG *classifications,     /* ...putting 'em here         */
+	 INT_OR_LONG *backward,            /* Step backward or forward?   */
+         INT_OR_LONG *max_steps,           /* Max. number of steps to take*/
+	 INT_OR_LONG *incoming_verbose,    /* Level of verbosity          */
 	 char **status_file_name,          /* Place to dump messages      */
-	 long *status)                     /* Info. about any failures    */
+	 INT_OR_LONG *status)              /* Info. about any failures    */
 {
 
 
@@ -172,8 +170,9 @@ if (*theyre_the_same == FALSE)
 	else
             action = DO_NN_INITIALIZE;
         first_time = TRUE;
-	do_nn (action, first_time, train, test, c, k_vec, *number_of_ks,  *theyre_the_same, *number_of_classes,
-		       cost, prior, error_rates, misclass_mat, *return_classifications,
+	do_nn (action, first_time, train, test, c, k_vec, *number_of_ks,  
+               *theyre_the_same, *number_of_classes, cost, prior, error_rates, 
+               misclass_mat, *return_classifications,
 			   classifications, verbose, status_file);
 
 	*best_error_rate = 1.1;
@@ -228,7 +227,8 @@ else
 ** Allocate space for error rates
 */
 if (verbose > 0) {
-fprintf (status_file, "Okay, we're this far, with %li k's\n", *number_of_ks);
+fprintf (status_file, "Okay, we're this far, with %li k's\n", 
+                       (long) *number_of_ks);
     fflush (status_file);
 }
 
@@ -268,9 +268,10 @@ if (verbose > 0) {
 fprintf (status_file, "Calling for the first time!\n");
     fflush (status_file);
 }
-do_nn (action, first_time, train, train, c, k_vec, *number_of_ks,  *theyre_the_same, *number_of_classes,
+do_nn (action, first_time, train, train, c, k_vec, *number_of_ks,  
+           *theyre_the_same, *number_of_classes,
            cost, prior, error_rates, misclass_mat, dont_return_classifications,
-		   (long *) 0, verbose, status_file);
+		   (INT_OR_LONG *) 0, verbose, status_file);
 first_time = FALSE;
 
 action = DO_NN_COMPUTE;
@@ -290,7 +291,8 @@ for (k_ctr = 0; k_ctr < *number_of_ks; k_ctr++)
 
 if (verbose > 0)
 {
-    fprintf (status_file, "U: Starting point: rate %f, index %li\n", *best_error_rate, *best_k_index);
+    fprintf (status_file, "U: Starting point: rate %f, index %li\n", 
+             *best_error_rate, (long) *best_k_index);
     fflush (status_file);
 }
 
@@ -320,7 +322,7 @@ while (*max_steps < 0 || number_of_steps < *max_steps){
             do_nn (action, first_time, train, train, c, k_vec, *number_of_ks,
                  *theyre_the_same, *number_of_classes, cost, prior,
                     error_rates, misclass_mat, dont_return_classifications,
-                    (long *) 0, verbose, status_file);
+                    (INT_OR_LONG *) 0, verbose, status_file);
             if (*backward)
                 *SUB (c, 0, i) = 1.0;                  /* Put it back         */
             else
@@ -401,7 +403,7 @@ best_error_rate_this_set, action_ing, best_error_rate_after_deletion);
 do_nn (DO_NN_QUIT, first_time, train, train, c, k_vec, *number_of_ks,
 			   *theyre_the_same, *number_of_classes, cost, prior,
                 error_rates, misclass_mat, dont_return_classifications,
-				(long *) 0, verbose, status_file);
+				(INT_OR_LONG *) 0, verbose, status_file);
 
 if (*scaled == DONT_SCALE) {
 	if (verbose > 0) fclose (status_file);
@@ -430,7 +432,8 @@ for (i = 0; i < c->ncol; i++)
 */
 *SUB (c, 0L, 0L) = 0.0;
 if (verbose > 0)
-	fprintf (status_file, "About to scale (thread 2); *scaled is %li!\n", *scaled);
+	fprintf (status_file, "About to scale (thread 2); *scaled is %li!\n", 
+                              (long) *scaled);
 
 if (*scaled == USE_SDS)
 	scale_matrix_rows (train, FALSE, TRUE, c, COMPUTE_SCALINGS, (double *) 0, col_sds);
@@ -452,7 +455,7 @@ else
 
 do_nn (action, first_time, train, train, c, k_vec, *number_of_ks,  *theyre_the_same, *number_of_classes,
            cost, prior, error_rates, misclass_mat, dont_return_classifications,
-		   (long *) 0, verbose, status_file);
+		   (INT_OR_LONG *) 0, verbose, status_file);
 
 action = DO_NN_COMPUTE;
 /*
@@ -469,7 +472,8 @@ for (k_ctr = 0; k_ctr < *number_of_ks; k_ctr++)
 }
 
 if (verbose > 0)
-	fprintf (status_file, "S: Starting point: rate %f, index %li\n", *best_error_rate, *best_k_index);
+	fprintf (status_file, "S: Starting point: rate %f, index %li\n", 
+                 *best_error_rate, (long) *best_k_index);
 
 /*
 ** Now go through each variable (row) in turn, finding the error rates when
@@ -496,7 +500,7 @@ while (*max_steps < 0 || number_of_steps < *max_steps) {
 		do_nn (action, first_time, train, train, c, k_vec, *number_of_ks,   /* Get error rates     */
 			   *theyre_the_same, *number_of_classes, cost, prior,
                 error_rates, misclass_mat, dont_return_classifications,
-				(long *) 0, verbose, status_file);
+				(INT_OR_LONG *) 0, verbose, status_file);
 		if (*backward)
 		    *SUB (c, 0, i) = 1.0;                                  /* Put it back         */
 		else
@@ -591,7 +595,7 @@ else
 do_nn (DO_NN_QUIT, first_time, train, train, c, k_vec, *number_of_ks,
 			   *theyre_the_same, *number_of_classes, cost, prior,
                 error_rates, misclass_mat, dont_return_classifications,
-				(long *) 0, verbose, status_file);
+				(INT_OR_LONG *) 0, verbose, status_file);
 
 free (error_rates);
 free (best_error_rates_scaled);

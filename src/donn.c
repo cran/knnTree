@@ -19,7 +19,13 @@
 extern char *S_alloc();
 extern void do_nothing();
 #define calloc S_alloc
-#define free do_nothing;
+#define free do_nothing
+#endif
+
+#ifdef BUILDING_FOR_R
+#define INT_OR_LONG int
+#else
+#define INT_OR_LONG long
 #endif
 /*
 ** If big_and_fast is defined, we will compute distances from every test set item to every
@@ -37,7 +43,7 @@ static int big_and_fast;
 double hold_this; /* testing only */
 
 
-int poll(long *classes, double *distances, long *k, long how_many_ks, int number_of_classes,
+int poll(long *classes, double *distances, INT_OR_LONG *k, long how_many_ks, int number_of_classes,
 		 long largest_k, long slots, MATRIX *prior, long *outcome, int quit, 
                  FILE *status_file, int poll_debug);
 double c_euclidean (double *, double *, double *, long, double);
@@ -52,12 +58,13 @@ double c_absolute (double *, double *, double *, long, double);
 
 /*=========================== do_nn =================================*/
 
-int do_nn (long action, long first_time, MATRIX *training, MATRIX *test,
-           MATRIX *c, long *k, long how_many_ks,
-           long theyre_the_same, int number_of_classes,
+int do_nn (INT_OR_LONG action, INT_OR_LONG first_time, 
+           MATRIX *training, MATRIX *test,
+           MATRIX *c, INT_OR_LONG *k, INT_OR_LONG how_many_ks,
+           INT_OR_LONG theyre_the_same, int number_of_classes,
            MATRIX *cost, MATRIX *prior, double *error_rates,
-           MATRIX *misclass_mat, long return_classifications,
-           long *classifications, int verbose, FILE *status_file)
+           MATRIX *misclass_mat, INT_OR_LONG return_classifications,
+           INT_OR_LONG *classifications, int verbose, FILE *status_file)
 {
 /*
 ** This is the simple version of donn. The metric is euclidean, with variable weights
@@ -234,8 +241,9 @@ if (all_cs_are_0)
 
                 if (verbose >= 3 && k_ctr == 0) {
                     fprintf (status_file,
-                        "k = %ld: Classified test rec. %li (a %li) as %i (naive model)\n",
-                         k[k_ctr], test_ctr, test_class, class_with_most);
+             "k = %ld: Classified test rec. %li (a %li) as %i (naive model)\n",
+                         (long) k[k_ctr], (long) test_ctr, (long) test_class, 
+                         class_with_most);
                    fflush (status_file);
                 }
                 } /* end "for k_ctr" loop to fill misclasses, errors, and classifications. */
@@ -247,7 +255,7 @@ if (all_cs_are_0)
             {
                 fprintf (status_file,
                     "k = %ld: misclassed %f records out of %li, fraction %f (naive)\n",
-                    k[k_ctr], error_rates[k_ctr], test->ncol,
+                    (long) k[k_ctr], error_rates[k_ctr], test->ncol,
                     ((double) error_rates[k_ctr]) / ( (double) test->ncol));
                 fflush (status_file);
             }
@@ -313,7 +321,7 @@ if (initialized == FALSE)
     {
 	if (verbose > 0)
             fprintf (status_file, "Unable to get %li longs for results; abort\n",
-                how_many_ks);
+                (long) how_many_ks);
         free (nearest_distance);
         free (nearest_neighbor);
         free (nearest_class);
@@ -627,7 +635,7 @@ nearest_class[1], nearest_class[2]);
 		if (verbose >= 3 && k_ctr == 0) {
 			fprintf (status_file,
 			"k = %ld: Classified test rec. %li (a %li) as %li (nearest: %li, dist. %f)\n",
-			k[k_ctr], test_ctr, test_class, (long) poll_result[k_ctr],
+			(long) k[k_ctr], test_ctr, test_class, (long) poll_result[k_ctr],
 			(long) nearest_neighbor[0], nearest_distance[0]);
                         fflush (status_file);
                 }
@@ -647,7 +655,7 @@ for (k_ctr = 0; k_ctr < how_many_ks; k_ctr++)
     {
         fprintf (status_file,
 			"k = %ld: misclassed %f records out of %li, fraction %f\n",
-            k[k_ctr], error_rates[k_ctr], test_item_count,
+            (long) k[k_ctr], error_rates[k_ctr], test_item_count,
                 ((double) error_rates[k_ctr]) / ( (double) test_item_count));
         fflush (status_file);
     }
@@ -687,7 +695,7 @@ return 0;
 } /* end "do_nn." */
 
 /*============================  poll  =====================================*/
-int poll (long *classes, double *distances, long *k, long how_many_ks, int number_of_classes,
+int poll (long *classes, double *distances, INT_OR_LONG *k, long how_many_ks, int number_of_classes,
           long largest_k, long slots, MATRIX * prior, long *outcome, int quit, 
           FILE *status_file, int poll_debug)
 {
@@ -789,7 +797,7 @@ for (k_ctr = 0; k_ctr < how_many_ks; k_ctr++)
     for (i = 0; i < k[k_ctr]; i++)
     {
 if (poll_debug)
-printf ("k is %li; Classes %i is %li\n", k[k_ctr], i, classes[i]);
+printf ("k is %li; Classes %i is %li\n", (long) k[k_ctr], i, classes[i]);
         if (prior == (MATRIX *) NULL)
             class_results[classes[i]] ++;
         else
@@ -966,6 +974,4 @@ for (i = 0; i < n; i++)
         return (-1.0);
 }
 return (sum);
-
-} /* end "c_absolute" */
-
+}
