@@ -1,6 +1,6 @@
 Package: knnTree
-Version: 1.2.2
-Date: 2004-10-25
+Version: 1.2.3
+Date: 2004-11-15
 Title: k-nn classification with variable selection inside leaves of a tree
 Author: Sam Buttrey <buttrey@nps.navy.mil>
 Maintainer: Sam Buttrey <buttrey@nps.navy.mil>
