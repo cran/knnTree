@@ -77,7 +77,7 @@ predict (iris.knn, iris[-samp,c(5, 1:4)], iris[samp, c(5, 1:4)])
 [1] 0.06666667}
 }
 
-\keywords{models}
+\keyword{models}
 \references{Buttrey and Karo, 2002}
 \author{Sam Buttrey \email{buttrey@nps.navy.mil}}
 \seealso{\code{\link{knnTree}}}

@@ -10,7 +10,7 @@ created by \R{knnTree}}
 \item{...} {Other arguments, currently ignored}}
 
 
-\keywords{print}
+\keyword{print}
 \references{Buttrey and Karo, 2002}
 \author{Sam Buttrey \email{buttrey@nps.navy.mil}}
 \seealso{\code{link{knn.var}}, \code{\link{knnTree}}}

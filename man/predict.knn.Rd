@@ -27,7 +27,7 @@ may become very large.}
 return.classifications = TRUE, a second item named classifications is a vector
 with the classification of each item in the test set.}
 
-\keywords{models}
+\keyword{models}
 \references{Buttrey and Karo, 2002}
 \author{Sam Buttrey \email{buttrey@nps.navy.mil}}
 \seealso{\code{link{knn.var}}, \code{\link{knnTree}}}

@@ -1,6 +1,6 @@
 knnTree         : Build knnTree models
 knn.var         : Build knn models with variable selection
-predict.knn     : Copute some predictions from a knn model
+predict.knn     : Compute some predictions from a knn model
 predict.knnTree : Compute some predictions from a knnTree model
 print.knn       : Print some information about a knn model
 print.knnTree   : Print some information about a knnTree model
