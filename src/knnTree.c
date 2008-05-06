@@ -1,7 +1,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
 
 #include "matrix.h"
 #include "utils.h"

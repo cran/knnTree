@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include <malloc.h>
 #include <errno.h>
 #include "utils.h"
 /* Required for Microsoft? */
